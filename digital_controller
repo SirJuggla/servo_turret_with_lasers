@@ -1,0 +1,109 @@
+/* 
+ Controlling a servo position using a potentiometer (variable resistor) 
+ by Michal Rinott <http://people.interaction-ivrea.it/m.rinott> 
+
+ modified on 8 Nov 2013
+ by Scott Fitzgerald
+ http://arduino.cc/en/Tutorial/Knob
+*/
+
+#include <Servo.h> 
+ 
+Servo vertServo;  // create servo object to control a servo 
+Servo horzServo; 
+int Hval = 90;
+int Vval = 90;
+int val = 0;
+//int hdeg = 2;  //amount to move with each button press
+//int vdeg = val;
+int delVal = (5);
+int upVal = (179);//upper limits
+int downVal = (2);//lower limits
+int leftVal = (1);//left limit
+int rightVal = (179);//right limit
+int laser = 8;
+
+const int pot = A5;
+const int  buttonPin = 2;
+
+//int buttonPushCounter = 0;   // counter for the number of button presses
+int buttonState;         // current state of the button
+int lastButtonState = HIGH;     // previous state of the button
+long lastDebounceTime = 0;  // the last time the output pin was toggled
+long debounceDelay = 0;    // the debounce time; increase if the output flickers
+int laserState = LOW;
+
+
+void setup() 
+{ 
+  pinMode(buttonPin, INPUT);
+  pinMode(laser, OUTPUT);
+  vertServo.attach(5);
+  horzServo.attach(6);
+  Serial.begin(9600);
+ 
+  digitalWrite(laser, laserState); 
+} 
+
+
+
+void loop()
+{
+  
+  Serial.begin(9600);
+  
+  
+  
+  //button
+  int reading = digitalRead(buttonPin);
+  if (reading != lastButtonState) {    // reset the debouncing timer
+    lastDebounceTime = millis();
+  } 
+  
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+     if (reading != buttonState) {
+      buttonState = reading;      // only toggle the LED if the new button state is HIGH
+      if (buttonState == LOW) {
+        laserState = !laserState;
+      }
+     }
+  }
+ 
+  
+  
+  
+  
+  
+  
+  //pot
+  val = analogRead(pot)/100;
+  val = constrain(val,1,1020);
+  //val = map(val, 0, 1023, 0, 180);
+  // uses the parallax 5 position switch
+  //digitalWrite(laser, HIGH);
+  Vval = constrain(Vval, downVal, upVal);
+  Hval = constrain(Hval, leftVal, rightVal);
+  if(digitalRead(A3) == LOW)//left button
+    horzServo.write(Hval += val);//move left
+  if(digitalRead(A2)== LOW)//down button
+    vertServo.write(Vval -= val); //move down
+  if(digitalRead(A1) == LOW)//right button
+    horzServo.write(Hval -= val);//move right 
+  if(digitalRead(3) == LOW)//up button
+    vertServo.write(Vval += val);//move down
+  if(digitalRead(2) == LOW)
+    digitalWrite(laser, laserState);
+  
+    Serial.print("  Hval=");
+    Serial.print(Hval);
+    Serial.print("  Vval=");   
+    Serial.print(Vval);
+    Serial.print("  pot=");
+    Serial.print(val);
+    Serial.print("  laser=");
+    Serial.println(laserState);
+     
+  delay(delVal);
+   lastButtonState = reading;
+ 
+}
